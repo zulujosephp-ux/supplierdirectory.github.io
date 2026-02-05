@@ -1,0 +1,2742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAMCOM Supplier Directory</title>
+    <style>
+        :root {
+            --primary-green: #4CAF50;
+            --danger-red: #ff4d4d;
+            --link-blue: #007bff;
+            --nav-yellow: #ffe400;
+            --grid-gap: 15px;
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+            --warning-orange: #ff9800;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+        }
+
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1a1a1a, #333);
+            z-index: 20000; display: none; justify-content: center; align-items: center;
+        }
+
+        .login-card {
+            background: white; padding: 40px; border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 350px; text-align: center;
+        }
+
+        .login-card img { margin-bottom: 20px; }
+        .login-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .login-card h2 { margin-top: 0; color: #333; }
+        
+        .pass-wrapper { position: relative; }
+        .toggle-pass { 
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%); 
+            cursor: pointer; font-size: 18px; color: #777; 
+        }
+
+        .topmenu {
+            width: 100%; padding: 20px 0; color: white; text-align: center;
+            background-size: cover; background-position: center;
+            transition: background-image 1.5s ease-in-out;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .top-nav {
+            list-style: none; padding: 0; background: #333; margin: 0;
+            display: flex; justify-content: center; flex-wrap: wrap;
+        }
+
+        .top-nav li a {
+            display: block; padding: 15px 25px; text-decoration: none;
+            font-weight: bold; color: white; transition: 0.3s; cursor: pointer;
+        }
+
+        .top-nav li a:hover { color: var(--nav-yellow); }
+
+        .admin-controls {
+            background: #fff; padding: 15px; text-align: center;
+            border-bottom: 1px solid #ddd; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+        }
+
+        .grid-section { padding: 40px 20px; max-width: 1200px; margin: 0 auto; }
+        .grid-container {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--grid-gap); width: 100%;
+        }
+
+        .grid-item {
+            background: #3CB8F4; border-radius: var(--border-radius); overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform var(--transition-speed) ease;
+            text-decoration: none; color: #333; display: flex; flex-direction: column; cursor: pointer;
+        }
+
+        .grid-item img { width: 100%; height: 140px; object-fit: cover; }
+        .grid-item span { padding: 15px; text-align: center; font-weight: 600; font-size: 0.9rem; background: white; }
+        .grid-item:hover { transform: translateY(-5px); box-shadow: 0 15px 25px rgba(0,0,0,0.20); }
+
+        #categoryPageView, #aboutView, #contactView, #linksView { 
+            display: none; 
+            padding: 40px 20px; 
+            max-width: 1300px; 
+            margin: 0 auto; 
+        }
+        
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; font-size: 14px; }
+        .data-table th, .data-table td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        .data-table th { background: var(--primary-green); color: white; }
+        .data-table a { color: var(--link-blue); text-decoration: none; font-weight: bold; }
+
+        /* BEAUTIFIED COMPLIANCE PILLS */
+        .compliance-pill { 
+            display: inline-block; padding: 4px 8px; border-radius: 50px; 
+            font-size: 10px; font-weight: bold; color: white; margin: 2px;
+            text-transform: uppercase;
+        }
+        .comp-ok { background: #2ecc71; }
+        .comp-bad { background: #e74c3c; }
+        .comp-expired { background: #f39c12; }
+
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-add { background: var(--primary-green); }
+        .btn-back { background: #607d8b; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; font-weight: bold;}
+        .btn-edit { background: #f39c12; padding: 5px 10px; font-size: 12px; border-radius: 4px; color: white; border: none; }
+        .btn-del { background: var(--danger-red); padding: 5px 10px; font-size: 12px; border-radius: 4px; color: white; border: none; }
+
+        .modal {
+            display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center;
+        }
+        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 450px; max-height: 80vh; overflow-y: auto; }
+
+        .audit-container { max-height: 400px; overflow-y: auto; text-align: left; border: 1px solid #eee; padding: 10px; border-radius: 5px; }
+        .log-entry { padding: 8px; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 12px; }
+        .log-user { font-weight: bold; color: var(--primary-green); }
+        .log-action { color: #444; margin-left: 5px; }
+        .log-time { color: #999; font-style: italic; }
+
+        /* Modified By Dropdown Styles */
+        .modified-by-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .modified-by-display {
+            cursor: pointer;
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .modified-by-display:hover {
+            background: #e0e0e0;
+        }
+        
+        .dropdown-arrow {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .history-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 250px;
+            max-width: 300px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 100;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-dropdown.show {
+            display: block;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 12px;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-user {
+            font-weight: bold;
+            color: var(--primary-green);
+        }
+        
+        .history-date {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        
+        .history-action {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        /* Role badges */
+        .role-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        .role-admin {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .role-staff {
+            background: #3498db;
+            color: white;
+        }
+        
+        /* User status */
+        .user-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-online {
+            background: #2ecc71;
+        }
+        
+        .status-offline {
+            background: #95a5a6;
+        }
+
+        /* Certificate upload styles */
+        .certificate-upload {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px dashed #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        
+        .certificate-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .certificate-item {
+            width: 100px;
+            text-align: center;
+            font-size: 10px;
+        }
+        
+        .certificate-thumbnail {
+            width: 100px;
+            height: 80px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+        
+        .certificate-name {
+            word-break: break-word;
+            margin-top: 5px;
+        }
+        
+        .remove-certificate {
+            background: var(--danger-red);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            position: absolute;
+            margin-left: -10px;
+            margin-top: -10px;
+        }
+
+        /* VERTICAL LIFE BAR STYLES - Updated */
+        .vertical-life-bar-container {
+            width: 20px;
+            height: 60px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #ddd;
+            margin: 0 auto;
+        }
+        
+        .vertical-life-bar-fill {
+            width: 100%;
+            background: linear-gradient(to top, #2ecc71, #4CAF50);
+            transition: height 0.5s ease;
+            border-radius: 10px;
+            position: absolute;
+            bottom: 0;
+        }
+        
+        .vertical-life-bar-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #333;
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+        }
+        
+        .vertical-life-bar-expiring {
+            background: linear-gradient(to top, #ff9800, #ff5722);
+        }
+        
+        .vertical-life-bar-expired {
+            background: linear-gradient(to top, #f44336, #e74c3c);
+        }
+
+        /* Active sessions panel */
+        .sessions-panel {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            width: 250px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .sessions-header {
+            background: var(--primary-green);
+            color: white;
+            padding: 10px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sessions-body {
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .session-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .session-user {
+            display: flex;
+            align-items: center;
+        }
+        
+        .session-time {
+            font-size: 10px;
+            color: #888;
+        }
+
+        /* Pulse animation for online status */
+        .pulse-online {
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+
+        /* About Us styles */
+        .about-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            max-width: 1000px;
+        }
+        
+        .mission-vision-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .mv-box {
+            padding: 20px;
+            border-left: 5px solid var(--primary-green);
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .staff-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .staff-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+        
+        .staff-card img {
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-green);
+        }
+
+        /* Links page styles */
+        .controls-container {
+            width: 95%;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        /* DOCUMENT VIEWER STYLES */
+        .document-thumbnail {
+            display: inline-block;
+            position: relative;
+            margin: 2px;
+        }
+
+        .document-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .document-icon:hover {
+            background: #45a049;
+            transform: scale(1.1);
+        }
+
+        .document-viewer-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .document-viewer-content {
+            width: 90%;
+            height: 90%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .document-viewer-header {
+            padding: 15px;
+            background: var(--primary-green);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-viewer-body {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .document-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .document-thumbnail-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .document-thumbnail-item {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+        }
+
+        .document-thumbnail-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .document-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger-red);
+            color: white;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Pagination styles for audit logs */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        
+        .page-btn {
+            padding: 5px 12px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .page-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .page-btn.active {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Compact supplier details table */
+        .compact-table th, .compact-table td {
+            padding: 8px 10px !important;
+            font-size: 13px !important;
+        }
+        
+        .compact-table .compliance-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        @media (max-width: 900px) { 
+            .grid-container { grid-template-columns: repeat(2, 1fr); } 
+            .top-nav { flex-direction: column; }
+            .admin-controls { flex-direction: column; }
+            .sessions-panel { position: static; width: 100%; margin: 10px 0; }
+            .mission-vision-grid { grid-template-columns: 1fr; }
+            .staff-section { grid-template-columns: 1fr; }
+            .compact-table th, .compact-table td {
+                padding: 6px 8px !important;
+                font-size: 12px !important;
+            }
+        }
+    </style>
+
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<div id="timeWarning" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ff4d4d; color: white; text-align: center; padding: 15px; z-index: 30000; font-weight: bold; border-bottom: 2px solid #fff;">
+    ⚠️ SYSTEM ALERT: Scheduled lockout at 16:50. Please save your work!
+</div>
+
+<div id="loginOverlay">
+    <div class="login-card">
+        <img src="./images/mainlogo.png" width="100">
+        
+        <div id="lockStatusContent" style="display: none;">
+            <h2 style="color: #ff4d4d;">System Locked</h2>
+            <p style="color: #666; font-size: 14px;">Access resumes in:</p>
+            <div id="countdownClock" style="font-size: 2.5rem; font-weight: bold; color: #333; margin: 20px 0; font-family: 'Courier New', Courier, monospace; letter-spacing: 2px;">
+                00:00:00
+            </div>
+            <p style="font-size: 12px; color: #888;">Operating Hours: 07:30 - 16:50 CAT</p>
+            <p id="lockMessage" style="font-size: 12px; color: #666; margin-top: 10px;"></p>
+        </div>
+
+        <div id="loginFieldsContent">
+            <h2>System Login</h2>
+            <input type="text" id="userIn" placeholder="Username">
+            <div class="pass-wrapper">
+                <input type="password" id="passIn" placeholder="Password">
+                <span class="toggle-pass" onclick="togglePassword()">👁️</span>
+            </div>
+            <button class="btn btn-add" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">Login</button>
+            <p style="font-size: 12px; margin-top: 15px; color: #666; cursor: pointer;" onclick="resetPasswordFlow()">Forgot Password?</p>
+        </div>
+    </div>
+</div>
+
+<div class="topmenu" id="headerSection">
+    <img src="./images/mainlogo.png" width="120">
+    <h1>ZAMCOM SUPPLIER DIRECTORY</h1>
+    <h2>PROCUREMENT</h2>
+    <marquee style="background: rgba(0,0,0,0.3); padding: 2px 0; margin-top: 2px;">Right Quality - Right Quantity - Right Time - Right Price - Right Place</marquee>
+    <h4 id="greeting" style="margin-top:20px;"> <i> Welcome </i> </h4>
+</div>
+
+<ul class="top-nav">
+    <li><a onclick="showView('home')">HOME</a></li>
+    <li><a onclick="showView('links')">LINKS</a></li>
+    <li><a onclick="showView('contact')">CONTACT US</a></li>
+    <li><a onclick="showView('about')">ABOUT US</a></li>
+    <li><a onclick="logout()" style="background: #888;">LOGOUT</a></li>
+    <button class="btn" style="background:#455A64; margin: 10px;" onclick="showAuditLogs()">📜 View Logs</button>
+    <button id="userMgmtBtn" class="btn" style="background:#e67e22; margin: 10px; display:none;" onclick="manageUsersModal()">👥 User Management</button>
+    <button id="sessionsBtn" class="btn" style="background:#9b59b6; margin: 10px; display:none;" onclick="toggleSessionsPanel()">👁️ Active Sessions</button>
+</ul>
+
+<div id="backupStatus" style="text-align: center; font-size: 12px; color: #666; margin: 10px 0;">
+    Last Backup: <span id="lastBackupDate">Never</span>
+</div>
+
+<div id="systemStatusHeader" style="background: #fff; padding: 10px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; px-20px;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-left: 20px;">
+        <span id="statusDot" style="height: 12px; width: 12px; border-radius: 50%; display: inline-block;"></span>
+        <span id="statusText" style="font-weight: bold; font-size: 14px;">Checking Status...</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div id="currentUserInfo" style="font-size: 12px; color: #555;">
+            <span id="currentUserDisplay">Not logged in</span>
+            <span id="userRoleBadge" style="display: none;"></span>
+        </div>
+        <div id="liveClock" style="font-family: monospace; font-weight: bold; color: #555;"></div>
+    </div>
+</div>
+
+<!-- Document Viewer Modal -->
+<div id="documentViewerModal" class="document-viewer-modal">
+    <div class="document-viewer-content">
+        <div class="document-viewer-header">
+            <span id="documentViewerTitle">Supplier Documents</span>
+            <button onclick="closeDocumentViewer()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✕</button>
+        </div>
+        <div class="document-viewer-body" id="documentViewerBody">
+            <!-- Document content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<div id="homeView" class="grid-section">
+    <div class="admin-controls">
+        <button class="btn btn-add" onclick="openModal('category')">+ New Category</button>
+        <button class="btn btn-add" style="background:#3498db" onclick="openModal('supplier')">+ New Supplier</button>
+        
+        <input type="text" id="globalSearch" placeholder="🔍 Search Supplier Name..." 
+               style="padding: 10px; border-radius: 5px; border: 1px solid #ddd; width: 250px;" 
+               onkeyup="filterEverything()">
+
+        <button class="btn" style="background:#607d8b" onclick="exportData()">💾 Export Backup</button>
+        <button class="btn" style="background:#9c27b0" onclick="document.getElementById('importFile').click()">📥 Import & Merge</button>
+        <input type="file" id="importFile" style="display:none" multiple onchange="importData(event)">
+    </div>
+
+    <div id="defaultHomeContent">
+        <h2 style="text-align:center; color: #333;">Supplier Categories</h2>
+        <div class="grid-container" id="categoryGrid"></div>
+    </div>
+
+    <div id="searchResultSection" style="display:none;">
+        <h2 style="text-align:center; color: var(--primary-green);">Search Results</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Supplier Name</th>
+                    <th>Category</th>
+                    <th>Specialization</th>
+                    <th>Phone</th>
+                    <th>Renewal Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="globalSearchResultsBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="categoryPageView">
+    <h2 id="categoryTitle" style="color: #333;">Category Name</h2>
+    <div id="complianceBanner"
+     style="display:none; margin:15px 0; padding:12px;
+            background:#ff4d4d; color:white; border-radius:8px;
+            font-weight:bold; text-align:center;">
+    ⚠️ WARNING: This category contains NON-COMPLIANT or EXPIRED suppliers.
+</div>
+    <button class="btn-back" onclick="showView('home')">← Back to Home</button>
+    <div style="overflow-x: auto;">
+        <table class="data-table compact-table">
+            <thead>
+                <tr>
+                    <th>Supplier Name</th>
+                    <th>Specialization</th>
+                    <th>Phone</th>
+                    <th>T-PIN</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Compliance</th>
+                    <th style="width: 40px;">Renewal</th>
+                    <th style="width: 40px;">Docs</th>
+                    <th style="width: 80px;">Modified</th>
+                    <th style="width: 80px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="supplierTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="aboutView">
+    <div class="about-card">
+        <h2 style="color: var(--primary-green); text-align: center;">About ZAMCOM Procurement</h2>
+        <p style="color: #555; line-height: 1.6; padding-left : 30px; padding-right : 30px;" >
+            The ZAMCOM Procurement Department is dedicated to the systematic acquisition of goods and services 
+            that support the Zambia Institute of Mass Communication's mission. We ensure every kwacha spent 
+            brings maximum value to our institution. 
+        </p> 
+
+        <div class="mission-vision-grid">
+            <div class="mv-box">
+                <h3 style="color: #2c3e50; padding-left : 30px; padding-right : 30px;">Our Mission </h3>
+                <p style=" color: #555; line-height: 1.6; padding-left : 30px; padding-right : 30px;" >To deliver timely, transparent, and ethical procurement solutions through strategic sourcing and robust supplier relationship management.</p>
+            </div>
+
+            <div class="mv-box" style="border-left-color: var(--link-blue);">
+                <h3 style="color: #2c3e50; padding-left : 30px; padding-right : 30px;">Our Vision</h3>
+                <p style="color: #555; line-height: 1.6; padding-left : 30px; padding-right : 30px;">To lead ZAMCOM into a new era of digital procurement excellence, fostering growth for local and international suppliers.</p>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; color: #2c3e50;">Our Leadership</h2>
+        <div class="staff-section">
+            <div class="staff-card">
+                <center>
+                <img src="./images/mainlogo3.png" alt="Chishala Lusaka" width="130" height="130" >
+                <h3>Chishala Lusaka</h3>
+                <p>Procurement Officer <br> Expertise: Contract Management & Compliance</p>
+                </center>
+            </div>
+           
+            <div class="staff-card">
+                <center>
+                <img src="./images/josephprofile.jpg" alt="Joseph Zulu" width="130" height="130">
+                <h3>Joseph Zulu</h3>
+                <p>Procurement Officer <br> Expertise: Supplier Relations & Compliance</p>
+                </center>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="contactView" style="padding: 40px 20px; max-width: 1000px; margin: 0 auto;">
+    <div class="about-card">
+        <h2 style="color: var(--primary-green); text-align: center;">Contact Information</h2>
+        <p style="color: #555; line-height: 1.6; padding-left : 30px; padding-right : 30px;" >
+            Welcome to the ZAMCOM Supplier Directory. This system was developed by Joseph Zulu, with a purpose to create a single directory where we can find all our most trusted vendors and suppliers. For more information, you can contact the developer on the contact details below:<br><br>
+            - Office Location: Plot No. 3529, Government Road, Ridgeway, Lusaka, Zambia.<br>
+            - General Inquiries: zulujosephp@gmail.com<br>
+            - Phone: +260973031254<br>
+        </p> 
+    </div>
+</div>
+
+<div id="linksView" style="padding: 20px;">
+    <h2>Links Management</h2>
+    <div class="controls-container">
+        <button class="btn btn-add" onclick="openLinkModal()">+ Add New Link</button>
+    </div>
+    
+    <table class="data-table" id="linksTable">
+        <thead>
+            <tr>
+                <th>Institution</th>
+                <th>Website</th>
+                <th>Email Address</th>
+                <th style="width: 80px;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="linksBody"></tbody>
+    </table>
+</div>
+
+<!-- Active Sessions Panel -->
+<div id="sessionsPanel" class="sessions-panel">
+    <div class="sessions-header">
+        <span>👥 Active Sessions</span>
+        <button onclick="toggleSessionsPanel()" style="background: none; border: none; color: white; cursor: pointer;">✕</button>
+    </div>
+    <div class="sessions-body" id="activeSessionsList">
+        <div style="padding: 10px; text-align: center; color: #888;">Loading...</div>
+    </div>
+</div>
+
+<!-- Main Modal -->
+<div id="modalOverlay" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Add New</h3>
+        <div id="modalFields"></div>
+        <button class="btn btn-add" id="modalSaveBtn" style="width:100%">Save Changes</button>
+        <button onclick="closeModal()" class="btn" style="background:#777; width:100%; margin-top:5px;">Cancel</button>
+    </div>
+</div>
+
+<!-- Links Modal -->
+<div id="linkModal" class="modal">
+    <div class="modal-content">
+        <h3>Add New Institution</h3>
+        <input type="text" id="instName" placeholder="Institution Name">
+        <input type="text" id="instWeb" placeholder="Website (e.g., www.site.com)">
+        <input type="email" id="instEmail" placeholder="Email Address">
+        <button class="btn btn-add" style="width:100%" onclick="addLink()">Save Link</button>
+        <button class="btn" style="background:#ccc; width:100%; margin-top:5px;" onclick="closeLinkModal()">Cancel</button>
+    </div>
+</div>
+
+<script>
+    const LOCK_TIME = { hr: 16, min: 50 };
+    const OPEN_TIME = { hr: 7, min: 30 };
+    const WARNING_TIME = { hr: 16, min: 30 };
+    const MAX_LOGIN_ATTEMPTS = 5;
+    const LOCK_DURATION_MINUTES = 10;
+    
+    // Define user roles
+    const USER_ROLES = {
+        ADMIN: 'admin',
+        STAFF: 'staff'  // Changed from 'editor' to 'staff'
+    };
+
+    // Track active sessions
+    const SESSION_KEY = 'z_active_sessions';
+    
+    function getActiveSessions() {
+        return JSON.parse(localStorage.getItem(SESSION_KEY)) || {};
+    }
+    
+    function updateActiveSession(username, sessionId = null) {
+        const sessions = getActiveSessions();
+        const sessionIdToUse = sessionId || generateSessionId();
+        
+        sessions[username] = {
+            sessionId: sessionIdToUse,
+            lastActive: Date.now(),
+            ip: 'local' // In production, you would get real IP
+        };
+        
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessions));
+        return sessionIdToUse;
+    }
+    
+    function removeActiveSession(username) {
+        const sessions = getActiveSessions();
+        delete sessions[username];
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessions));
+    }
+    
+    function generateSessionId() {
+        return 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    function isSessionValid(username) {
+        const sessions = getActiveSessions();
+        const session = sessions[username];
+        if (!session) return true; // No session exists, allow login
+        
+        // Check if session is older than 24 hours
+        const sessionAge = Date.now() - session.lastActive;
+        const MAX_SESSION_AGE = 24 * 60 * 60 * 1000; // 24 hours
+        
+        if (sessionAge > MAX_SESSION_AGE) {
+            removeActiveSession(username);
+            return true;
+        }
+        
+        return false;
+    }
+
+    function isSystemLocked() {
+        const currentUser = localStorage.getItem('logged_user');
+        if(currentUser === "JOSEPH") return false;
+        
+        const now = new Date();
+        const currentTotal = (now.getHours() * 60) + now.getMinutes();
+        const lockTotal = (LOCK_TIME.hr * 60) + LOCK_TIME.min;
+        const openTotal = (OPEN_TIME.hr * 60) + OPEN_TIME.min;
+
+        return (currentTotal >= lockTotal || currentTotal < openTotal);
+    }
+
+    const mainframeKey = "JATKISSEMPIRE";
+    
+    // Initialize user accounts with roles
+    let userAccounts = JSON.parse(localStorage.getItem('z_user_accounts'));
+    if (!userAccounts) {
+        userAccounts = [
+            { username: "JOSEPH", password: "RIGHTJOSEPH", role: USER_ROLES.ADMIN, enabled: true, lastLogin: null },
+            { username: "CHISHALA", password: "RIGHTCHISHALA", role: USER_ROLES.STAFF, enabled: true, lastLogin: null }
+        ];
+        localStorage.setItem('z_user_accounts', JSON.stringify(userAccounts));
+    }
+
+    // Helper function to get user by username
+    function getUser(username) {
+        return userAccounts.find(u => u.username === username.toUpperCase());
+    }
+
+    // Helper function to check if user has permission
+    function hasPermission(username, permission) {
+        const user = getUser(username);
+        if (!user || !user.enabled) return false;
+        
+        // Admin has all permissions
+        if (user.role === USER_ROLES.ADMIN) return true;
+        
+        // Staff permissions
+        if (user.role === USER_ROLES.STAFF) {
+            const staffPermissions = [
+                'add_category',
+                'edit_category',
+                'add_supplier',
+                'edit_supplier',
+                'view_suppliers',
+                'view_categories',
+                'export_data',
+                'import_data',
+                'view_logs',
+                'add_link',
+                'edit_link'
+            ];
+            return staffPermissions.includes(permission);
+        }
+        
+        return false;
+    }
+
+    // Helper function to get current user's role
+    function getCurrentUserRole() {
+        const currentUser = localStorage.getItem('logged_user');
+        if (!currentUser) return null;
+        
+        const user = getUser(currentUser);
+        return user ? user.role : null;
+    }
+
+    // Helper function to check if current user is admin
+    function isCurrentUserAdmin() {
+        return getCurrentUserRole() === USER_ROLES.ADMIN;
+    }
+
+    function updateDashboardStatus() {
+        const now = new Date();
+        const isLocked = isSystemLocked();
+        const dot = document.getElementById('statusDot');
+        const txt = document.getElementById('statusText');
+        const clock = document.getElementById('liveClock');
+
+        clock.innerText = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        if (isLocked) {
+            dot.className = 'status-offline';
+            txt.innerText = "SYSTEM SECURED (LOCKED)";
+            txt.style.color = "var(--danger-red)";
+        } else {
+            dot.className = 'pulse-online';
+            txt.innerText = "SYSTEM OPERATIONAL (OPEN)";
+            txt.style.color = "var(--primary-green)";
+        }
+    }
+
+    function updateCountdown() {
+        const now = new Date();
+        const isLocked = isSystemLocked();
+        const currentUser = localStorage.getItem('logged_user');
+        
+        const lockUI = document.getElementById('lockStatusContent');
+        const loginUI = document.getElementById('loginFieldsContent');
+        const lockMessage = document.getElementById('lockMessage');
+
+        if (isLocked) {
+            lockUI.style.display = 'block';
+            loginUI.style.display = 'none';
+
+            if (currentUser === "JOSEPH") {
+                lockMessage.innerHTML = "<strong>🔓 ADMIN OVERRIDE:</strong> You can bypass system lock.";
+                lockMessage.style.color = "var(--primary-green)";
+            } else {
+                lockMessage.innerHTML = "System access is restricted to authorized personnel during operational hours.";
+                lockMessage.style.color = "#666";
+            }
+
+            let target = new Date();
+            target.setHours(7, 30, 0, 0);
+
+            if (now > target) {
+                target.setDate(target.getDate() + 1);
+            }
+
+            const diff = target - now;
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('countdownClock').innerText = 
+                `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        } else {
+            lockUI.style.display = 'none';
+            loginUI.style.display = 'block';
+        }
+    }
+
+    function recordAction(action) {
+        let logs = JSON.parse(localStorage.getItem('z_audit_logs')) || [];
+        const user = localStorage.getItem('logged_user') || 'System';
+        const entry = {
+            user: user,
+            action: action,
+            time: new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', second:'2-digit' })
+        };
+        logs.unshift(entry); 
+        if(logs.length > 1000) logs.pop(); 
+        localStorage.setItem('z_audit_logs', JSON.stringify(logs));
+    }
+
+    // Function to record supplier edit history
+    function recordSupplierEdit(supplierIndex, action) {
+        let editHistory = JSON.parse(localStorage.getItem('z_supplier_edit_history')) || {};
+        const supplierId = supplierIndex;
+        const user = localStorage.getItem('logged_user') || 'System';
+        const timestamp = new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        
+        if (!editHistory[supplierId]) {
+            editHistory[supplierId] = [];
+        }
+        
+        const historyEntry = {
+            user: user,
+            action: action,
+            timestamp: timestamp,
+            date: new Date().toISOString()
+        };
+        
+        editHistory[supplierId].unshift(historyEntry);
+        
+        // Keep only last 10 edits per supplier
+        if (editHistory[supplierId].length > 10) {
+            editHistory[supplierId].pop();
+        }
+        
+        localStorage.setItem('z_supplier_edit_history', JSON.stringify(editHistory));
+    }
+
+    // Function to get supplier edit history
+    function getSupplierEditHistory(supplierIndex) {
+        const editHistory = JSON.parse(localStorage.getItem('z_supplier_edit_history')) || {};
+        return editHistory[supplierIndex] || [];
+    }
+
+    // Function to toggle history dropdown
+    function toggleHistoryDropdown(supplierIndex, event) {
+        event.stopPropagation();
+        
+        const dropdownId = `history-dropdown-${supplierIndex}`;
+        const dropdown = document.getElementById(dropdownId);
+        const allDropdowns = document.querySelectorAll('.history-dropdown');
+        
+        // Close all other dropdowns
+        allDropdowns.forEach(d => {
+            if (d.id !== dropdownId) {
+                d.classList.remove('show');
+            }
+        });
+        
+        // Toggle current dropdown
+        if (dropdown) {
+            dropdown.classList.toggle('show');
+            
+            // If showing, populate with history
+            if (dropdown.classList.contains('show')) {
+                const history = getSupplierEditHistory(supplierIndex);
+                const supplier = suppliers[supplierIndex];
+                
+                let historyHTML = '';
+                
+                if (history.length > 0) {
+                    history.forEach((entry, index) => {
+                        historyHTML += `
+                            <div class="history-item">
+                                <div class="history-user">${entry.user}</div>
+                                <div class="history-date">${entry.timestamp}</div>
+                                <div class="history-action">${entry.action}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    historyHTML = `
+                        <div class="history-item">
+                            <div style="color: #888; font-style: italic;">
+                                No edit history recorded for this supplier.
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                dropdown.innerHTML = historyHTML;
+            }
+        }
+        
+        // Close dropdown when clicking outside
+        const closeDropdown = (e) => {
+            if (!dropdown.contains(e.target) && !e.target.closest('.modified-by-display')) {
+                dropdown.classList.remove('show');
+                document.removeEventListener('click', closeDropdown);
+            }
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('click', closeDropdown);
+        }, 10);
+    }
+
+    function togglePassword() {
+        const pField = document.getElementById('passIn');
+        pField.type = pField.type === "password" ? "text" : "password";
+    }
+
+    function getLoginMeta(username) {
+        return JSON.parse(localStorage.getItem(`login_meta_${username}`)) || {
+            attempts: 0,
+            lockedUntil: null
+        };
+    }
+
+    function saveLoginMeta(username, meta) {
+        localStorage.setItem(`login_meta_${username}`, JSON.stringify(meta));
+    }
+
+    function clearLoginMeta(username) {
+        localStorage.removeItem(`login_meta_${username}`);
+    }
+
+    function isAccountLocked(username) {
+        const meta = getLoginMeta(username);
+        if (!meta.lockedUntil) return false;
+
+        const now = Date.now();
+        if (now > meta.lockedUntil) {
+            clearLoginMeta(username); // auto-unlock
+            recordAction(`Account auto-unlocked for user: ${username}`);
+            return false;
+        }
+        return true;
+    }
+
+    function getRemainingLockTime(username) {
+        const meta = getLoginMeta(username);
+        if (!meta.lockedUntil) return 0;
+        return Math.ceil((meta.lockedUntil - Date.now()) / 60000);
+    }
+
+    function handleLogin() {
+        if (isSystemLocked()) {
+            const currentUser = document.getElementById('userIn').value.toUpperCase().trim();
+            if (currentUser !== "JOSEPH") {
+                alert("Access Denied: The system is currently locked. Operating hours: 07:30 to 16:50 CAT.");
+                return;
+            }
+        }
+
+        const u = document.getElementById('userIn').value.toUpperCase().trim();
+        const p = document.getElementById('passIn').value.trim();
+
+        if (!u) {
+            alert("Username required.");
+            return;
+        }
+
+        // Check if account exists and is enabled
+        const user = getUser(u);
+        if (!user) {
+            alert("Invalid username or password!");
+            return;
+        }
+        
+        if (!user.enabled) {
+            alert("This account has been disabled. Please contact the administrator.");
+            return;
+        }
+
+        // Check if user is already logged in elsewhere
+        if (!isSessionValid(u)) {
+            alert("User is already logged in on another device. Please logout from other devices first.");
+            return;
+        }
+
+        // 🔒 Check account lock
+        if (isAccountLocked(u)) {
+            const mins = getRemainingLockTime(u);
+            alert(`Account locked due to multiple failed attempts.\nTry again in ${mins} minute(s).`);
+            return;
+        }
+
+        // ✅ Successful login
+        if (user.password === p) {
+            clearLoginMeta(u); // reset attempts
+
+            // Update last login timestamp
+            user.lastLogin = new Date().toISOString();
+            localStorage.setItem('z_user_accounts', JSON.stringify(userAccounts));
+
+            // Create new session
+            const sessionId = updateActiveSession(u);
+            localStorage.setItem('logged_user', u);
+            localStorage.setItem('current_session', sessionId);
+            localStorage.setItem('last_login', new Date().toDateString());
+            document.getElementById('loginOverlay').style.display = 'none';
+
+            updateGreeting();
+            updateUserDisplay();
+            updateSessionsPanel();
+            recordAction("Logged into the system");
+            
+            // Show/hide admin buttons based on role
+            if (isCurrentUserAdmin()) {
+                document.getElementById('userMgmtBtn').style.display = 'inline-block';
+                document.getElementById('sessionsBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('userMgmtBtn').style.display = 'none';
+                document.getElementById('sessionsBtn').style.display = 'none';
+            }
+            
+            location.reload(); // Refresh to update UI based on role
+
+        } else {
+            // ❌ Failed login
+            const meta = getLoginMeta(u);
+            meta.attempts++;
+
+            if (meta.attempts >= MAX_LOGIN_ATTEMPTS) {
+                meta.lockedUntil = Date.now() + (LOCK_DURATION_MINUTES * 60 * 1000);
+                saveLoginMeta(u, meta);
+
+                recordAction(`Account locked after ${MAX_LOGIN_ATTEMPTS} failed attempts: ${u}`);
+
+                alert(`Account locked!\nToo many failed attempts.\nTry again in ${LOCK_DURATION_MINUTES} minutes.`);
+            } else {
+                saveLoginMeta(u, meta);
+                alert(`Invalid Username or Password!\nAttempts left: ${MAX_LOGIN_ATTEMPTS - meta.attempts}`);
+            }
+        }
+    }
+
+    // Enhanced user management modal
+    function manageUsersModal() {
+        const fields = document.getElementById('modalFields');
+        document.getElementById('modalTitle').innerText = "User Management";
+        document.getElementById('modalSaveBtn').style.display = 'none';
+        
+        // Get active sessions
+        const sessions = getActiveSessions();
+        
+        fields.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <h4 style="margin: 10px 0;">Current Users</h4>
+                <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 5px;">
+                    ${userAccounts.map(user => {
+                        const isCurrentUser = localStorage.getItem('logged_user') === user.username;
+                        const isLoggedIn = sessions[user.username];
+                        const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never';
+                        return `
+                            <div style="padding: 10px; border-bottom: 1px solid #f5f5f5; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span class="user-status ${isLoggedIn ? 'status-online' : 'status-offline'}"></span>
+                                    <strong>${user.username}</strong>
+                                    <span class="role-badge ${user.role === USER_ROLES.ADMIN ? 'role-admin' : 'role-staff'}">
+                                        ${user.role.toUpperCase()}
+                                    </span>
+                                    ${isCurrentUser ? '<span style="color: #27ae60; font-size: 10px;">(You)</span>' : ''}
+                                    <div style="font-size: 10px; color: #666;">
+                                        Last Login: ${lastLogin}<br>
+                                        Password: <span style="font-family: monospace;">${user.password}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    ${user.username !== "JOSEPH" ? `
+                                        <button class="btn-del" style="margin: 2px;" onclick="toggleUserStatus('${user.username}')">
+                                            ${user.enabled ? 'Disable' : 'Enable'}
+                                        </button>
+                                        <button class="btn-del" style="margin: 2px;" onclick="deleteUser('${user.username}')">Remove</button>
+                                    ` : ''}
+                                    ${isLoggedIn && !isCurrentUser ? `
+                                        <button class="btn" style="background: #9b59b6; padding: 2px 6px; margin: 2px;" onclick="forceLogoutUser('${user.username}')">Sign Out</button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h4 style="margin: 10px 0;">Add New User</h4>
+                <input type="text" id="newUsername" placeholder="Username" style="width: 100%; padding: 8px; margin-bottom: 5px;">
+                <input type="password" id="newPassword" placeholder="Password" style="width: 100%; padding: 8px; margin-bottom: 5px;">
+                <select id="newUserRole" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                    <option value="${USER_ROLES.STAFF}">Staff</option>
+                    <option value="${USER_ROLES.ADMIN}">Admin</option>
+                </select>
+                <button class="btn btn-add" style="width: 100%;" onclick="addNewUser()">Add User</button>
+            </div>
+        `;
+        
+        document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function addNewUser() {
+        const username = document.getElementById('newUsername').value.toUpperCase().trim();
+        const password = document.getElementById('newPassword').value;
+        const role = document.getElementById('newUserRole').value;
+        
+        if (!username || !password) {
+            alert("Username and password are required!");
+            return;
+        }
+        
+        if (getUser(username)) {
+            alert("User already exists!");
+            return;
+        }
+        
+        userAccounts.push({
+            username: username,
+            password: password,
+            role: role,
+            enabled: true,
+            lastLogin: null
+        });
+        
+        localStorage.setItem('z_user_accounts', JSON.stringify(userAccounts));
+        recordAction(`Added new ${role} user: ${username}`);
+        manageUsersModal(); // Refresh the modal
+    }
+
+    function deleteUser(username) {
+        if(username === "JOSEPH") {
+            alert("Cannot delete the primary administrator account!");
+            return;
+        }
+        
+        if(confirm(`Are you sure you want to delete user ${username}?`)) {
+            userAccounts = userAccounts.filter(u => u.username !== username);
+            localStorage.setItem('z_user_accounts', JSON.stringify(userAccounts));
+            removeActiveSession(username);
+            recordAction(`Deleted user: ${username}`);
+            manageUsersModal();
+        }
+    }
+
+    function toggleUserStatus(username) {
+        if(username === "JOSEPH") {
+            alert("Cannot disable the primary administrator account!");
+            return;
+        }
+        
+        const user = getUser(username);
+        if (user) {
+            user.enabled = !user.enabled;
+            localStorage.setItem('z_user_accounts', JSON.stringify(userAccounts));
+            if (!user.enabled) {
+                removeActiveSession(username);
+            }
+            recordAction(`${user.enabled ? 'Enabled' : 'Disabled'} user: ${username}`);
+            manageUsersModal();
+        }
+    }
+
+    function forceLogoutUser(username) {
+        if(confirm(`Force ${username} to logout?`)) {
+            // Remove their session
+            removeActiveSession(username);
+            
+            // If they're currently logged in, clear their session
+            if (localStorage.getItem('logged_user') === username) {
+                localStorage.removeItem('logged_user');
+                localStorage.removeItem('current_session');
+                localStorage.removeItem('last_login');
+                location.reload();
+            }
+            
+            recordAction(`Forced logout for user: ${username}`);
+            updateSessionsPanel();
+            manageUsersModal();
+        }
+    }
+
+    function updateUserDisplay() {
+        const currentUser = localStorage.getItem('logged_user');
+        const userInfo = document.getElementById('currentUserDisplay');
+        const roleBadge = document.getElementById('userRoleBadge');
+        
+        if (currentUser) {
+            const user = getUser(currentUser);
+            userInfo.textContent = currentUser;
+            
+            if (user) {
+                roleBadge.textContent = user.role.toUpperCase();
+                roleBadge.className = user.role === USER_ROLES.ADMIN ? 'role-badge role-admin' : 'role-badge role-staff';
+                roleBadge.style.display = 'inline-block';
+            }
+        } else {
+            userInfo.textContent = 'Not logged in';
+            roleBadge.style.display = 'none';
+        }
+    }
+
+    function toggleSessionsPanel() {
+        const panel = document.getElementById('sessionsPanel');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            updateSessionsPanel();
+            panel.style.display = 'block';
+        }
+    }
+
+    function updateSessionsPanel() {
+        const sessions = getActiveSessions();
+        const container = document.getElementById('activeSessionsList');
+        
+        if (Object.keys(sessions).length === 0) {
+            container.innerHTML = '<div style="padding: 10px; text-align: center; color: #888;">No active sessions</div>';
+            return;
+        }
+        
+        let html = '';
+        Object.entries(sessions).forEach(([username, session]) => {
+            const sessionAge = Date.now() - session.lastActive;
+            const minutesAgo = Math.floor(sessionAge / (1000 * 60));
+            const timeText = minutesAgo === 0 ? 'Just now' : `${minutesAgo} min ago`;
+            
+            html += `
+                <div class="session-item">
+                    <div class="session-user">
+                        <span class="user-status status-online"></span>
+                        <strong>${username}</strong>
+                    </div>
+                    <div class="session-time">${timeText}</div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function filterEverything() {
+        const term = document.getElementById('globalSearch').value.toLowerCase().trim();
+        const homeView = document.getElementById('homeView');
+        if (term.length === 0) { showView('home'); return; }
+
+        const isHomeActive = homeView.style.display !== 'none';
+        if (isHomeActive) {
+            const defaultContent = document.getElementById('defaultHomeContent');
+            const searchSection = document.getElementById('searchResultSection');
+            const resultsBody = document.getElementById('globalSearchResultsBody');
+            defaultContent.style.display = 'none';
+            searchSection.style.display = 'block';
+
+            // Sort suppliers by dateAdded (most recent first)
+            const sortedSuppliers = [...suppliers].sort((a, b) => {
+                const dateA = a.dateAdded ? new Date(a.dateAdded) : new Date(0);
+                const dateB = b.dateAdded ? new Date(b.dateAdded) : new Date(0);
+                return dateB - dateA;
+            });
+
+            const matches = sortedSuppliers.filter(s => 
+                s.name.toLowerCase().includes(term) || 
+                (s.tpin && s.tpin.toLowerCase().includes(term))
+            );
+
+            resultsBody.innerHTML = matches.map(s => {
+                const renewalBar = createVerticalRenewalBarHTML(s);
+                return `
+                    <tr>
+                        <td><b>${s.name}</b></td>
+                        <td><span style="background:#eee; padding:2px 5px; border-radius:4px;">${s.category}</span></td>
+                        <td>${s.person}</td>
+                        <td>${s.phone}</td>
+                        <td style="text-align: center;">${renewalBar}</td>
+                        <td>
+                            <button class="btn-edit" onclick="viewSupplierCategory('${s.category}')">View Category</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            const tableRows = document.querySelectorAll('#supplierTableBody tr');
+            tableRows.forEach(row => {
+                const supplierName = row.cells[0] ? row.cells[0].innerText.toLowerCase() : "";
+                row.style.display = supplierName.includes(term) ? '' : 'none';
+            });
+        }
+    }
+
+    function viewSupplierCategory(catName) {
+        document.getElementById('globalSearch').value = ""; 
+        showView('detail', catName);
+    }
+
+    function checkDailySession() {
+        const lastLogin = localStorage.getItem('last_login');
+        const today = new Date().toDateString();
+        const currentUser = localStorage.getItem('logged_user');
+        const currentSession = localStorage.getItem('current_session');
+
+        updateCountdown();
+
+        // Check if session is still valid
+        if (currentUser) {
+            const sessions = getActiveSessions();
+            const userSession = sessions[currentUser];
+            if (!userSession || userSession.sessionId !== currentSession) {
+                // Session invalid, force logout
+                localStorage.removeItem('logged_user');
+                localStorage.removeItem('current_session');
+                localStorage.removeItem('last_login');
+                alert("Your session has expired or you logged in from another device.");
+                document.getElementById('loginOverlay').style.display = 'flex';
+                return;
+            }
+        }
+
+        if (isSystemLocked()) {
+            if (currentUser !== "JOSEPH") {
+                localStorage.removeItem('logged_user');
+                localStorage.removeItem('current_session');
+                localStorage.removeItem('last_login');
+                document.getElementById('loginOverlay').style.display = 'flex';
+                return;
+            }
+        }
+
+        if (currentUser && lastLogin === today) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            updateGreeting();
+            updateUserDisplay();
+            
+            // Show user management button only for admin
+            if(isCurrentUserAdmin()) {
+                document.getElementById('userMgmtBtn').style.display = 'inline-block';
+                document.getElementById('sessionsBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('userMgmtBtn').style.display = 'none';
+                document.getElementById('sessionsBtn').style.display = 'none';
+            }
+        } else {
+            document.getElementById('loginOverlay').style.display = 'flex';
+        }
+    }
+
+    setInterval(updateCountdown, 1000);
+
+    function checkAutoBackup() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const todayDate = now.toDateString();
+        const lastAutoDate = localStorage.getItem('z_last_auto_date');
+
+        if (currentHour === 16 && currentMinute === 0 && lastAutoDate !== todayDate) {
+            executeAutoBackup(todayDate);
+        }
+    }
+
+    function executeAutoBackup(dateString) {
+        const data = { 
+            categories: categories, 
+            suppliers: suppliers,
+            audit_logs: JSON.parse(localStorage.getItem('z_audit_logs')) || [],
+            supplier_edit_history: JSON.parse(localStorage.getItem('z_supplier_edit_history')) || {},
+            user_accounts: userAccounts,
+            certificates: JSON.parse(localStorage.getItem('z_certificates')) || {}
+        };
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+        const a = document.createElement('a');
+        
+        const fileName = `ZAMCOM_DAILY_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
+        
+        a.href = dataStr;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        localStorage.setItem('z_last_auto_date', dateString);
+        localStorage.setItem('z_last_backup', new Date().toLocaleString());
+        recordAction("SYSTEM: Successful 16:00 Automated Backup");
+        if(document.getElementById('lastBackupDate')) displayBackupDate();
+    }
+
+    function resetPasswordFlow() {
+        const mKey = prompt("Enter Universal Mainframe Password:");
+        if (mKey === mainframeKey) {
+            const targetUser = prompt("Enter Username to reset:").toUpperCase();
+            const user = getUser(targetUser);
+            if (user) {
+                const newPass = prompt(`Enter new password for ${targetUser}:`);
+                user.password = newPass;
+                localStorage.setItem('z_user_accounts', JSON.stringify(userAccounts));
+                recordAction(`Reset password for user: ${targetUser}`);
+                alert("Password changed successfully!");
+            } else { alert("User not found."); }
+        } else { alert("Unauthorized Access!"); }
+    }
+
+    function logout() {
+        const currentUser = localStorage.getItem('logged_user');
+        if (currentUser) {
+            removeActiveSession(currentUser);
+        }
+        recordAction("Logged out");
+        localStorage.removeItem('logged_user');
+        localStorage.removeItem('current_session');
+        localStorage.removeItem('last_login');
+        location.reload();
+    }
+
+    let categories = JSON.parse(localStorage.getItem('z_categories')) || ["Stationary", "IT Equipment", "Hardware", "Marketing"];
+    let suppliers = JSON.parse(localStorage.getItem('z_suppliers')) || [];
+    let currentCategory = "";
+
+    // Initialize certificates storage
+    let certificates = JSON.parse(localStorage.getItem('z_certificates')) || {};
+
+    // Links data
+    let links = JSON.parse(localStorage.getItem('zamcom_links')) || [
+        { name: "Zambia Public Procurement Authority", url: "http://www.zppa.org.zm", email: "info@zppa.org.zm" },
+        { name: "Zambia Institute of Purchasing and Supply", url: "http://www.zips.org.zm", email: "info@zips.org.zm" }
+    ];
+
+    // Function to get documents for a supplier
+    function getSupplierDocuments(supplierIndex) {
+        const supplierCerts = certificates[supplierIndex];
+        if (!supplierCerts) return [];
+        
+        const docs = [];
+        const certTypes = ['incorporation', 'tax', 'napsa'];
+        
+        certTypes.forEach(type => {
+            if (supplierCerts[type]) {
+                docs.push({
+                    type: type,
+                    name: supplierCerts[type].name,
+                    data: supplierCerts[type].data,
+                    uploaded: supplierCerts[type].uploaded,
+                    uploadedBy: supplierCerts[type].uploadedBy
+                });
+            }
+        });
+        
+        return docs;
+    }
+
+    // Function to create document icon HTML
+    function createDocumentIcon(supplierIndex) {
+        const docs = getSupplierDocuments(supplierIndex);
+        const hasDocuments = docs.length > 0;
+        
+        if (!hasDocuments) {
+            return '<span style="color:#999; font-size:12px;">No docs</span>';
+        }
+        
+        return `
+            <div class="document-thumbnail" onclick="openDocumentViewer(${supplierIndex})">
+                <div class="document-icon">
+                    📄
+                    ${docs.length > 1 ? `<span class="document-count">${docs.length}</span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    // Function to open document viewer
+    function openDocumentViewer(supplierIndex) {
+        const docs = getSupplierDocuments(supplierIndex);
+        const supplier = suppliers[supplierIndex];
+        
+        if (docs.length === 0) {
+            alert("No documents uploaded for this supplier.");
+            return;
+        }
+        
+        const modal = document.getElementById('documentViewerModal');
+        const title = document.getElementById('documentViewerTitle');
+        const body = document.getElementById('documentViewerBody');
+        
+        title.textContent = `Documents - ${supplier.name}`;
+        
+        // Create document viewer content
+        let contentHTML = '';
+        
+        if (docs.length === 1) {
+            // Single document - show full screen
+            const doc = docs[0];
+            if (doc.name.toLowerCase().endsWith('.pdf')) {
+                contentHTML = `
+                    <iframe src="${doc.data}" class="pdf-viewer"></iframe>
+                    <div style="text-align: center; margin-top: 10px; color: #666;">
+                        <small>${doc.name} • Uploaded by ${doc.uploadedBy} on ${new Date(doc.uploaded).toLocaleDateString()}</small>
+                    </div>
+                `;
+            } else {
+                contentHTML = `
+                    <img src="${doc.data}" class="document-image" alt="${doc.name}">
+                    <div style="text-align: center; margin-top: 10px; color: #666;">
+                        <small>${doc.name} • Uploaded by ${doc.uploadedBy} on ${new Date(doc.uploaded).toLocaleDateString()}</small>
+                    </div>
+                `;
+            }
+        } else {
+            // Multiple documents - show thumbnail grid
+            contentHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h3>${docs.length} Documents Available</h3>
+                    <p>Click on any document to view it full screen</p>
+                </div>
+                <div class="document-thumbnail-grid">
+                    ${docs.map((doc, index) => {
+                        const isImage = doc.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp)$/);
+                        const isPDF = doc.name.toLowerCase().endsWith('.pdf');
+                        
+                        let thumbnailHTML = '';
+                        if (isImage) {
+                            thumbnailHTML = `<img src="${doc.data}" alt="${doc.name}">`;
+                        } else if (isPDF) {
+                            thumbnailHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0;">
+                                <span style="font-size: 24px;">📄</span>
+                            </div>`;
+                        } else {
+                            thumbnailHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0;">
+                                <span style="font-size: 24px;">📎</span>
+                            </div>`;
+                        }
+                        
+                        return `
+                            <div class="document-thumbnail-item" onclick="viewSingleDocument(${supplierIndex}, ${index})">
+                                ${thumbnailHTML}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="margin-top: 20px; color: #666; font-size: 12px;">
+                    <p>Documents: ${docs.map(d => d.name).join(', ')}</p>
+                </div>
+            `;
+        }
+        
+        body.innerHTML = contentHTML;
+        modal.style.display = 'flex';
+    }
+
+    // Function to view single document from thumbnail grid
+    function viewSingleDocument(supplierIndex, docIndex) {
+        const docs = getSupplierDocuments(supplierIndex);
+        const doc = docs[docIndex];
+        const supplier = suppliers[supplierIndex];
+        
+        const modal = document.getElementById('documentViewerModal');
+        const title = document.getElementById('documentViewerTitle');
+        const body = document.getElementById('documentViewerBody');
+        
+        title.textContent = `${doc.name} - ${supplier.name}`;
+        
+        let contentHTML = '';
+        if (doc.name.toLowerCase().endsWith('.pdf')) {
+            contentHTML = `
+                <iframe src="${doc.data}" class="pdf-viewer"></iframe>
+                <div style="text-align: center; margin-top: 10px; color: #666;">
+                    <small>${doc.name} • Uploaded by ${doc.uploadedBy} on ${new Date(doc.uploaded).toLocaleDateString()}</small>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="openDocumentViewer(${supplierIndex})" class="btn" style="background: #607d8b;">
+                        ← Back to All Documents
+                    </button>
+                </div>
+            `;
+        } else {
+            contentHTML = `
+                <img src="${doc.data}" class="document-image" alt="${doc.name}">
+                <div style="text-align: center; margin-top: 10px; color: #666;">
+                    <small>${doc.name} • Uploaded by ${doc.uploadedBy} on ${new Date(doc.uploaded).toLocaleDateString()}</small>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="openDocumentViewer(${supplierIndex})" class="btn" style="background: #607d8b;">
+                        ← Back to All Documents
+                    </button>
+                </div>
+            `;
+        }
+        
+        body.innerHTML = contentHTML;
+    }
+
+    // Function to close document viewer
+    function closeDocumentViewer() {
+        document.getElementById('documentViewerModal').style.display = 'none';
+    }
+
+    function showView(viewName, catName = "") {
+        document.getElementById('globalSearch').value = "";
+        document.getElementById('searchResultSection').style.display = 'none';
+        document.getElementById('defaultHomeContent').style.display = 'block';
+
+        // Hide all views
+        document.getElementById('homeView').style.display = 'none';
+        document.getElementById('categoryPageView').style.display = 'none';
+        document.getElementById('aboutView').style.display = 'none';
+        document.getElementById('contactView').style.display = 'none';
+        document.getElementById('linksView').style.display = 'none';
+
+        if(viewName === 'home') {
+            document.getElementById('homeView').style.display = 'block';
+            renderCategories();
+        } else if(viewName === 'about') {
+            document.getElementById('aboutView').style.display = 'block';
+        } else if(viewName === 'contact') {
+            document.getElementById('contactView').style.display = 'block';
+        } else if(viewName === 'links') {
+            document.getElementById('linksView').style.display = 'block';
+            displayLinks();
+        } else if(viewName === 'detail') {
+            currentCategory = catName;
+            document.getElementById('categoryPageView').style.display = 'block';
+            document.getElementById('categoryTitle').innerText = catName;
+            renderSuppliers();
+        }
+    }
+
+    function renderCategories() {
+        const grid = document.getElementById('categoryGrid');
+        grid.innerHTML = categories.map(cat => {
+            const count = suppliers.filter(s => s.category === cat).length;
+            const currentUser = localStorage.getItem('logged_user');
+            
+            return `
+                <div class="grid-item" onclick="showView('detail', '${cat}')">
+                    <img src="./images/mainlogo3.png" alt="${cat}">
+                    <span>${cat} (${count})</span>
+                    <div style="background:white; padding-bottom:10px; text-align:center; display:flex; justify-content:center; gap:5px;">
+                        ${hasPermission(currentUser, 'edit_category') ? 
+                            `<button class="btn-edit" onclick="event.stopPropagation(); editCategory('${cat}')">Edit</button>` : ''}
+                        ${hasPermission(currentUser, 'delete_category') ? 
+                            `<button class="btn-del" onclick="event.stopPropagation(); deleteCategory('${cat}')">Delete</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function calculateRenewalProgress(supplier) {
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth();
+        const compYear = supplier.compliance?.year || currentYear;
+        
+        // If compliance year is not current year, it's expired
+        if (compYear !== currentYear) return 0;
+        
+        // Calculate percentage of year remaining (valid until December)
+        const monthsLeft = 12 - currentMonth;
+        const progress = (monthsLeft / 12) * 100;
+        
+        return Math.max(0, Math.min(100, progress));
+    }
+
+    // Updated function for VERTICAL renewal bar
+    function createVerticalRenewalBarHTML(supplier) {
+        const progress = calculateRenewalProgress(supplier);
+        const currentYear = new Date().getFullYear();
+        const compYear = supplier.compliance?.year || currentYear;
+        
+        let barClass = 'vertical-life-bar-fill';
+        if (progress < 25) {
+            barClass += ' vertical-life-bar-expired';
+        } else if (progress < 50) {
+            barClass += ' vertical-life-bar-expiring';
+        }
+        
+        const displayText = compYear !== currentYear ? 'EXP' : `${Math.round(progress)}%`;
+        const barHeight = compYear !== currentYear ? '100%' : `${progress}%`;
+        
+        return `
+            <div class="vertical-life-bar-container" title="Renews Dec ${compYear} - ${displayText}">
+                <div class="${barClass}" style="height: ${barHeight}"></div>
+                <div class="vertical-life-bar-text">${displayText}</div>
+            </div>
+        `;
+    }
+
+    function renderSuppliers() {
+        const tbody = document.getElementById('supplierTableBody');
+        
+        // Sort suppliers by dateAdded (most recent first)
+        const filtered = suppliers
+            .filter(s => s.category === currentCategory)
+            .sort((a, b) => {
+                const dateA = a.dateAdded ? new Date(a.dateAdded) : new Date(0);
+                const dateB = b.dateAdded ? new Date(b.dateAdded) : new Date(0);
+                return dateB - dateA;
+            });
+            
+        const currentUser = localStorage.getItem('logged_user');
+
+        const banner = document.getElementById('complianceBanner');
+        const currentYear = new Date().getFullYear();
+
+        const hasNonCompliant = filtered.some(s => {
+            if (!s.compliance) return true;
+            if (s.compliance.year !== currentYear) return true;
+
+            return !(
+                s.compliance.incorporation &&
+                s.compliance.napsa &&
+                s.compliance.tax
+            );
+        });
+
+        banner.style.display = hasNonCompliant ? 'block' : 'none';
+
+        tbody.innerHTML = filtered.map((s) => {
+            const realIndex = suppliers.indexOf(s);
+            const cleanPhone = s.phone.replace(/\D/g, '');
+            const currentYear = new Date().getFullYear();
+            const comp = s.compliance || {};
+            const expired = comp.year !== currentYear;
+
+            // Get edit history
+            const editHistory = getSupplierEditHistory(realIndex);
+            const lastEdit = editHistory.length > 0 ? editHistory[0] : null;
+            const modifier = lastEdit ? 
+                `<div style="font-size:9px; color:#666;"><b>${lastEdit.user}</b><br>${lastEdit.timestamp}</div>` : 
+                (s.lastEditBy ? `<div style="font-size:9px; color:#666;"><b>${s.lastEditBy}</b><br>${s.lastEditDate}</div>` : '---');
+
+            function badge(label, ok) {
+                if (expired) return `<span class="compliance-pill comp-expired">${label}</span>`;
+                return ok
+                    ? `<span class="compliance-pill comp-ok">${label}</span>`
+                    : `<span class="compliance-pill comp-bad">${label}</span>`;
+            }
+
+            const renewalBar = createVerticalRenewalBarHTML(s);
+            const documentIcon = createDocumentIcon(realIndex);
+
+            return `
+                <tr>
+                    <td>${s.name}</td>
+                    <td>${s.person}</td>
+                    <td><a href="https://wa.me/${cleanPhone}" target="_blank">${s.phone}</a></td>
+                    <td>${s.tpin || 'N/A'}</td>
+                    <td><a href="mailto:${s.email}">${s.email}</a></td>
+                    <td>${s.website || 'N/A'}</td>
+                    <td><div class="compliance-box">
+                        ${badge("COI", comp.incorporation)}
+                        ${badge("NAPSA", comp.napsa)}
+                        ${badge("TAX", comp.tax)}
+                    </div></td>
+                    <td style="text-align: center;">${renewalBar}</td>
+                    <td style="text-align: center;">${documentIcon}</td>
+                    <td style="text-align: center;">
+                        <div class="modified-by-container">
+                            <div class="modified-by-display" onclick="toggleHistoryDropdown(${realIndex}, event)">
+                                ${modifier}
+                                <span class="dropdown-arrow">▼</span>
+                            </div>
+                            <div id="history-dropdown-${realIndex}" class="history-dropdown"></div>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        ${hasPermission(currentUser, 'edit_supplier') ? 
+                            `<button class="btn-edit" onclick="editSupplier(${realIndex})">Edit</button>` : ''}
+                        ${hasPermission(currentUser, 'delete_supplier') ? 
+                            `<button class="btn-del" onclick="deleteSupplier(${realIndex})">Delete</button>` : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function editSupplier(index) { 
+        if (!hasPermission(localStorage.getItem('logged_user'), 'edit_supplier')) {
+            alert("You don't have permission to edit suppliers!");
+            return;
+        }
+        openModal('supplier', index); 
+    }
+
+    function deleteSupplier(index) {
+        if (!hasPermission(localStorage.getItem('logged_user'), 'delete_supplier')) {
+            alert("You don't have permission to delete suppliers!");
+            return;
+        }
+        
+        if(confirm("Are you sure you want to delete this supplier?")) {
+            const name = suppliers[index].name;
+            recordAction(`Deleted supplier: ${name}`);
+            recordSupplierEdit(index, `Deleted supplier: ${name}`);
+            suppliers.splice(index, 1);
+            localStorage.setItem('z_suppliers', JSON.stringify(suppliers));
+            renderSuppliers();
+        }
+    }
+
+    function editCategory(oldName) {
+        if (!hasPermission(localStorage.getItem('logged_user'), 'edit_category')) {
+            alert("You don't have permission to edit categories!");
+            return;
+        }
+        
+        const newName = prompt("Enter new name for the category:", oldName);
+        if (newName && newName !== oldName) {
+            const index = categories.indexOf(oldName);
+            if (index !== -1) {
+                categories[index] = newName;
+                suppliers.forEach(sup => { 
+                    if (sup.category === oldName) {
+                        sup.category = newName;
+                        const supplierIndex = suppliers.indexOf(sup);
+                        recordSupplierEdit(supplierIndex, `Category changed from ${oldName} to ${newName}`);
+                    }
+                });
+                localStorage.setItem('z_categories', JSON.stringify(categories));
+                localStorage.setItem('z_suppliers', JSON.stringify(suppliers));
+                recordAction(`Renamed category from ${oldName} to ${newName}`);
+                renderCategories();
+            }
+        }
+    }
+
+    function deleteCategory(cat) {
+        if (!hasPermission(localStorage.getItem('logged_user'), 'delete_category')) {
+            alert("You don't have permission to delete categories!");
+            return;
+        }
+        
+        if(confirm(`Delete category "${cat}" and all its suppliers?`)) {
+            recordAction(`Deleted category and all sub-data: ${cat}`);
+            categories = categories.filter(c => c !== cat);
+            suppliers = suppliers.filter(s => s.category !== cat);
+            localStorage.setItem('z_categories', JSON.stringify(categories));
+            localStorage.setItem('z_suppliers', JSON.stringify(suppliers));
+            renderCategories();
+        }
+    }
+
+    function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function saveCertificate(supplierIndex, type, fileData, fileName) {
+        if (!certificates[supplierIndex]) {
+            certificates[supplierIndex] = {};
+        }
+        
+        certificates[supplierIndex][type] = {
+            data: fileData,
+            name: fileName,
+            uploaded: new Date().toISOString(),
+            uploadedBy: localStorage.getItem('logged_user') || 'System'
+        };
+        
+        localStorage.setItem('z_certificates', JSON.stringify(certificates));
+    }
+
+    function removeCertificate(supplierIndex, type) {
+        if (certificates[supplierIndex]) {
+            delete certificates[supplierIndex][type];
+            localStorage.setItem('z_certificates', JSON.stringify(certificates));
+            return true;
+        }
+        return false;
+    }
+
+    function getCertificate(supplierIndex, type) {
+        return certificates[supplierIndex]?.[type];
+    }
+
+    function renderCertificatePreview(supplierIndex, type, currentCert = null) {
+        const cert = currentCert || getCertificate(supplierIndex, type);
+        if (!cert) return '';
+        
+        const isImage = cert.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp)$/);
+        const isPDF = cert.name.toLowerCase().endsWith('.pdf');
+        
+        let previewHTML = '';
+        if (isImage) {
+            previewHTML = `<img src="${cert.data}" class="certificate-thumbnail" alt="${cert.name}">`;
+        } else if (isPDF) {
+            previewHTML = `<div style="width: 100px; height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+                <span style="font-size: 24px;">📄</span>
+            </div>`;
+        } else {
+            previewHTML = `<div style="width: 100px; height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+                <span style="font-size: 24px;">📎</span>
+            </div>`;
+        }
+        
+        return `
+            <div class="certificate-item" style="position: relative;">
+                <button class="remove-certificate" onclick="removeCertificatePreview(${supplierIndex}, '${type}')">×</button>
+                ${previewHTML}
+                <div class="certificate-name">${cert.name.substring(0, 15)}${cert.name.length > 15 ? '...' : ''}</div>
+            </div>
+        `;
+    }
+
+    function removeCertificatePreview(supplierIndex, type) {
+        removeCertificate(supplierIndex, type);
+        
+        // Update the preview in the modal
+        const previewContainer = document.getElementById(`cert-preview-${type}-${supplierIndex}`);
+        if (previewContainer) {
+            previewContainer.innerHTML = '';
+        }
+    }
+
+    async function handleCertificateUpload(supplierIndex, type, event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const fileData = await readFileAsDataURL(file);
+        saveCertificate(supplierIndex, type, fileData, file.name);
+        
+        // Update preview
+        const previewContainer = document.getElementById(`cert-preview-${type}-${supplierIndex}`);
+        if (previewContainer) {
+            previewContainer.innerHTML = renderCertificatePreview(supplierIndex, type, {
+                data: fileData,
+                name: file.name
+            });
+        }
+    }
+
+    function openModal(type, editIndex = null) {
+        const currentUser = localStorage.getItem('logged_user');
+        
+        // Check permissions
+        if (type === 'category' && !hasPermission(currentUser, 'add_category')) {
+            alert("You don't have permission to add categories!");
+            return;
+        }
+        
+        if (type === 'supplier' && !hasPermission(currentUser, editIndex !== null ? 'edit_supplier' : 'add_supplier')) {
+            alert("You don't have permission to manage suppliers!");
+            return;
+        }
+        
+        const modal = document.getElementById('modalOverlay');
+        const fields = document.getElementById('modalFields');
+        const title = document.getElementById('modalTitle');
+        const saveBtn = document.getElementById('modalSaveBtn');
+        saveBtn.style.display = 'block';
+        modal.style.display = 'flex';
+
+        if(type === 'category') {
+            title.innerText = "New Category";
+            fields.innerHTML = `<input type="text" id="field1" placeholder="Category Name" style="width:100%; padding:10px; margin-bottom:10px;">`;
+
+            saveBtn.onclick = () => {
+                const name = document.getElementById('field1').value;
+                if(name) {
+                    categories.push(name);
+                    localStorage.setItem('z_categories', JSON.stringify(categories));
+                    recordAction(`Created new category: ${name}`);
+                    renderCategories();
+                    closeModal();
+                }
+            };
+        } else {
+            const s = editIndex !== null ? suppliers[editIndex] : {name:'', person:'', phone:'', tpin:'', email:'', website:'', category:currentCategory};
+            title.innerText = editIndex !== null ? "Edit Supplier" : "Add New Supplier";
+            
+            // Get existing certificates for this supplier
+            const certIncorporation = getCertificate(editIndex, 'incorporation');
+            const certTax = getCertificate(editIndex, 'tax');
+            const certNapsa = getCertificate(editIndex, 'napsa');
+            
+            fields.innerHTML = `
+                <input type="text" id="s_name" value="${s.name}" placeholder="Company Name" style="width:100%; padding:8px; margin-bottom:5px;">
+                <input type="text" id="s_person" value="${s.person}" placeholder="Specialization" style="width:100%; padding:8px; margin-bottom:5px;">
+                <input type="text" id="s_phone" value="${s.phone}" placeholder="Phone" style="width:100%; padding:8px; margin-bottom:5px;">
+                <input type="text" id="s_tpin" value="${s.tpin || ''}" placeholder="T-PIN" style="width:100%; padding:8px; margin-bottom:5px;">
+                <input type="email" id="s_email" value="${s.email}" placeholder="Email" style="width:100%; padding:8px; margin-bottom:5px;">
+                <input type="text" id="s_website" value="${s.website || ''}" placeholder="Physical Address" style="width:100%; padding:8px; margin-bottom:5px;">
+                
+                <div style="margin:10px 0; padding:10px; border:1px solid #eee; border-radius:8px;">
+                    <b>Legal Compliance (Valid until 31 Dec)</b><br><br>
+
+                    <label>
+                        <input type="checkbox" id="c_incorp" ${s.compliance?.incorporation ? 'checked' : ''}>
+                        Certificate of Incorporation
+                    </label>
+                    <div class="certificate-upload">
+                        <input type="file" id="cert_incorp_${editIndex}" 
+                               accept=".jpg,.jpeg,.png,.pdf" 
+                               onchange="handleCertificateUpload(${editIndex}, 'incorporation', event)"
+                               style="width: 100%; padding: 5px; margin-bottom: 5px;">
+                        <div id="cert-preview-incorporation-${editIndex}" class="certificate-preview">
+                            ${certIncorporation ? renderCertificatePreview(editIndex, 'incorporation') : ''}
+                        </div>
+                    </div>
+
+                    <label>
+                        <input type="checkbox" id="c_napsa" ${s.compliance?.napsa ? 'checked' : ''}>
+                        NAPSA Certificate
+                    </label>
+                    <div class="certificate-upload">
+                        <input type="file" id="cert_napsa_${editIndex}" 
+                               accept=".jpg,.jpeg,.png,.pdf" 
+                               onchange="handleCertificateUpload(${editIndex}, 'napsa', event)"
+                               style="width: 100%; padding: 5px; margin-bottom: 5px;">
+                        <div id="cert-preview-napsa-${editIndex}" class="certificate-preview">
+                            ${certNapsa ? renderCertificatePreview(editIndex, 'napsa') : ''}
+                        </div>
+                    </div>
+
+                    <label>
+                        <input type="checkbox" id="c_tax" ${s.compliance?.tax ? 'checked' : ''}>
+                        Tax Clearance Certificate
+                    </label>
+                    <div class="certificate-upload">
+                        <input type="file" id="cert_tax_${editIndex}" 
+                               accept=".jpg,.jpeg,.png,.pdf" 
+                               onchange="handleCertificateUpload(${editIndex}, 'tax', event)"
+                               style="width: 100%; padding: 5px; margin-bottom: 5px;">
+                        <div id="cert-preview-tax-${editIndex}" class="certificate-preview">
+                            ${certTax ? renderCertificatePreview(editIndex, 'tax') : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <select id="s_cat" style="width:100%; padding:8px; margin-bottom:5px;">
+                    ${categories.map(c => `<option ${c===s.category?'selected':''}>${c}</option>`).join('')}
+                </select>
+            `;
+
+            saveBtn.onclick = () => {
+                const currentUser = localStorage.getItem('logged_user') || 'System';
+                const timestamp = new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+                const currentYear = new Date().getFullYear();
+
+                const newSup = {
+                    name: document.getElementById('s_name').value,
+                    person: document.getElementById('s_person').value,
+                    phone: document.getElementById('s_phone').value,
+                    tpin: document.getElementById('s_tpin').value,
+                    email: document.getElementById('s_email').value,
+                    website: document.getElementById('s_website').value,
+                    category: document.getElementById('s_cat').value,
+                    dateAdded: editIndex !== null ? s.dateAdded : new Date().toISOString(),
+
+                    compliance: {
+                        incorporation: document.getElementById('c_incorp').checked,
+                        napsa: document.getElementById('c_napsa').checked,
+                        tax: document.getElementById('c_tax').checked,
+                        year: currentYear
+                    },
+
+                    lastEditBy: currentUser,
+                    lastEditDate: timestamp
+                };
+                
+                if(!newSup.name) return alert("Company name required");
+                
+                let action = '';
+                if(editIndex !== null) {
+                    const oldSupplier = suppliers[editIndex];
+                    action = `Updated supplier details: ${newSup.name}`;
+                    recordSupplierEdit(editIndex, `Updated supplier information (${Object.keys(newSup).filter(k => newSup[k] !== oldSupplier[k]).length} fields changed)`);
+                    suppliers[editIndex] = newSup;
+                    recordAction(`Updated supplier details: ${newSup.name}`);
+                } else {
+                    action = `Added new supplier: ${newSup.name}`;
+                    newSup.dateAdded = new Date().toISOString();
+                    suppliers.unshift(newSup); // Add to beginning of array for recent first
+                    const newIndex = 0;
+                    recordSupplierEdit(newIndex, `Added new supplier: ${newSup.name}`);
+                    recordAction(`Added new supplier: ${newSup.name}`);
+                }
+                
+                localStorage.setItem('z_suppliers', JSON.stringify(suppliers));
+                renderSuppliers();
+                closeModal();
+            };
+        }
+    }
+
+    function closeModal() { 
+        document.getElementById('modalOverlay').style.display = 'none'; 
+    }
+
+    function updateGreeting() {
+        const hour = new Date().getHours();
+        const user = localStorage.getItem('logged_user') || 'User';
+        const msg = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+        document.getElementById('greeting').innerHTML = `<i>${msg}, ${user}</i>`;
+    }
+
+    const bgImages = ['./images/bgx.jpg', './images/bgx1.jpg', './images/bg.jpg', './images/bgx3.jpg', './images/bgx4.jpg', './images/bgx5.jpg', './images/bgx6.jpg', './images/bgx7.jpg', './images/bgx8.jpg', './images/bgx9.jpg', './images/bgy1.jpg', './images/bgy3.jpg', './images/bgy4.jpg', './images/bgy5.jpg'];
+    function syncBG() {
+        const header = document.getElementById('headerSection');
+        if(!header) return;
+        const index = Math.floor((Math.floor(Date.now() / 1000) % (bgImages.length * 15)) / 15);
+        header.style.backgroundImage = `url(${bgImages[index]})`;
+    }
+
+    function checkMissedBackup() {
+        const now = new Date();
+        const todayDate = now.toDateString();
+        const lastAutoDate = localStorage.getItem('z_last_auto_date');
+        
+        if (now.getHours() >= 16 && lastAutoDate !== todayDate) {
+            console.log("Missed backup detected. Triggering now...");
+            executeAutoBackup(todayDate);
+        }
+    }
+
+    function exportData() {
+        const currentLogs = JSON.parse(localStorage.getItem('z_audit_logs')) || [];
+        const editHistory = JSON.parse(localStorage.getItem('z_supplier_edit_history')) || {};
+        const certData = JSON.parse(localStorage.getItem('z_certificates')) || {};
+        const sessions = getActiveSessions();
+        const linksData = JSON.parse(localStorage.getItem('zamcom_links')) || [];
+        
+        const data = { 
+            categories: categories, 
+            suppliers: suppliers,
+            audit_logs: currentLogs,
+            supplier_edit_history: editHistory,
+            user_accounts: userAccounts,
+            certificates: certData,
+            active_sessions: sessions,
+            links: linksData
+        };
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+        const a = document.createElement('a');
+        const now = new Date();
+        a.href = dataStr; 
+        a.download = `ZAMCOM_FULL_BACKUP_${now.toISOString().slice(0,10)}.json`; 
+        a.click();
+        localStorage.setItem('z_last_backup', now.toLocaleString());
+        displayBackupDate();
+        recordAction("Exported system backup including audit logs, certificates, and edit history");
+    }
+
+    function displayBackupDate() {
+        document.getElementById('lastBackupDate').innerText = localStorage.getItem('z_last_backup') || "Never";
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const incoming = JSON.parse(e.target.result);
+                if (incoming.categories) categories = incoming.categories;
+                if (incoming.suppliers) suppliers = incoming.suppliers;
+                
+                if (incoming.audit_logs) {
+                    let localLogs = JSON.parse(localStorage.getItem('z_audit_logs')) || [];
+                    const mergedLogs = [...incoming.audit_logs, ...localLogs];
+                    const uniqueLogs = mergedLogs.slice(0, 1000);
+                    localStorage.setItem('z_audit_logs', JSON.stringify(uniqueLogs));
+                }
+
+                if (incoming.supplier_edit_history) {
+                    localStorage.setItem('z_supplier_edit_history', JSON.stringify(incoming.supplier_edit_history));
+                }
+                
+                if (incoming.user_accounts) {
+                    // Merge user accounts, but preserve JOSEPH as admin
+                    const existingUsers = userAccounts.map(u => u.username);
+                    incoming.user_accounts.forEach(newUser => {
+                        if (!existingUsers.includes(newUser.username)) {
+                            userAccounts.push(newUser);
+                        }
+                    });
+                    localStorage.setItem('z_user_accounts', JSON.stringify(userAccounts));
+                }
+                
+                if (incoming.certificates) {
+                    localStorage.setItem('z_certificates', JSON.stringify(incoming.certificates));
+                    certificates = incoming.certificates;
+                }
+                
+                if (incoming.active_sessions) {
+                    localStorage.setItem(SESSION_KEY, JSON.stringify(incoming.active_sessions));
+                }
+
+                if (incoming.links) {
+                    localStorage.setItem('zamcom_links', JSON.stringify(incoming.links));
+                    links = incoming.links;
+                }
+
+                localStorage.setItem('z_categories', JSON.stringify(categories));
+                localStorage.setItem('z_suppliers', JSON.stringify(suppliers));
+                
+                recordAction("Imported system data and merged audit logs, certificates, and edit history");
+                alert("Import successful! All data, logs, certificates, and edit history have been restored.");
+                location.reload();
+            } catch (err) { 
+                console.error(err);
+                alert("Invalid File Format"); 
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function runTimeMonitoring() {
+        const now = new Date();
+        const hrs = now.getHours();
+        const mins = now.getMinutes();
+        const todayDate = now.toDateString();
+
+        updateDashboardStatus();
+        const warningBanner = document.getElementById('timeWarning');
+        if (hrs === 16 && mins >= 30 && mins < 50) {
+            warningBanner.style.display = 'block';
+        } else {
+            warningBanner.style.display = 'none';
+        }
+
+        const lastAutoDate = localStorage.getItem('z_last_auto_date');
+        if (hrs === 16 && mins === 49 && lastAutoDate !== todayDate) {
+            executeAutoBackup(todayDate);
+        }
+
+        if (isSystemLocked() && localStorage.getItem('logged_user') && !isCurrentUserAdmin()) {
+            alert("SYSTEM LOCK: Access hours ended. The system will now close until 07:30 CAT.");
+            logout();
+        }
+        
+        // Update active session timestamp
+        const currentUser = localStorage.getItem('logged_user');
+        if (currentUser) {
+            updateActiveSession(currentUser, localStorage.getItem('current_session'));
+        }
+        
+        // Update sessions panel if visible
+        const panel = document.getElementById('sessionsPanel');
+        if (panel.style.display === 'block') {
+            updateSessionsPanel();
+        }
+    }
+
+    // Updated function for paginated audit logs
+    function showAuditLogs(page = 1) {
+        if (!hasPermission(localStorage.getItem('logged_user'), 'view_logs')) {
+            alert("You don't have permission to view audit logs!");
+            return;
+        }
+        
+        const modal = document.getElementById('modalOverlay');
+        const fields = document.getElementById('modalFields');
+        const title = document.getElementById('modalTitle');
+        const saveBtn = document.getElementById('modalSaveBtn');
+        
+        title.innerText = "System Audit Logs";
+        modal.style.display = 'flex';
+        saveBtn.style.display = 'none';
+
+        const logs = JSON.parse(localStorage.getItem('z_audit_logs')) || [];
+        const logsPerPage = 20;
+        const totalPages = Math.ceil(logs.length / logsPerPage);
+        const startIndex = (page - 1) * logsPerPage;
+        const endIndex = startIndex + logsPerPage;
+        const pageLogs = logs.slice(startIndex, endIndex);
+        
+        let paginationHTML = '';
+        if (totalPages > 1) {
+            paginationHTML = `
+                <div class="pagination">
+                    <button class="page-btn" onclick="showAuditLogs(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹ Prev</button>
+                    <span style="font-size: 12px;">Page ${page} of ${totalPages}</span>
+                    <button class="page-btn" onclick="showAuditLogs(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>Next ›</button>
+                </div>
+            `;
+        }
+        
+        fields.innerHTML = `
+            <div style="margin-bottom: 10px; font-size: 12px; color: #666;">
+                Showing ${startIndex + 1}-${Math.min(endIndex, logs.length)} of ${logs.length} total logs
+            </div>
+            <div class="audit-container">
+                ${pageLogs.length === 0 ? '<p style="text-align:center">No logs recorded yet.</p>' : 
+                  pageLogs.map(l => `
+                    <div class="log-entry">
+                        <span><span class="log-user">${l.user}</span>: <span class="log-action">${l.action}</span></span>
+                        <span class="log-time">${l.time}</span>
+                    </div>
+                  `).join('')}
+            </div>
+            ${paginationHTML}
+            <button onclick="closeModal();" class="btn" style="background:#777; width:100%; margin-top:15px;">Close Logs</button>
+            <p style="font-size: 10px; color: #999; text-align: center; margin-top: 10px;">Audit logs are permanent and cannot be cleared.</p>
+        `;
+    }
+
+    // 1. Add a "Quick Stats" section to home page:
+    function renderQuickStats() {
+        const totalSuppliers = suppliers.length;
+        const compliant = suppliers.filter(s => {
+            const currentYear = new Date().getFullYear();
+            return s.compliance && 
+                   s.compliance.year === currentYear &&
+                   s.compliance.incorporation &&
+                   s.compliance.napsa &&
+                   s.compliance.tax;
+        }).length;
+        const expiringSoon = suppliers.filter(s => {
+            const progress = calculateRenewalProgress(s);
+            return progress < 50 && progress > 0;
+        }).length;
+        
+        return `
+            <div style="display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0; color: #333;">${totalSuppliers}</h3>
+                    <p style="color: #666; margin: 5px 0 0 0;">Total Suppliers</p>
+                </div>
+                <div style="flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0; color: #2ecc71;">${compliant}</h3>
+                    <p style="color: #666; margin: 5px 0 0 0;">Fully Compliant</p>
+                </div>
+                <div style="flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0; color: #f39c12;">${expiringSoon}</h3>
+                    <p style="color: #666; margin: 5px 0 0 0;">Renewing Soon</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // 2. Add export to Excel button:
+    function exportToExcel() {
+        // Create Excel file with all supplier data
+        // Using SheetJS or similar
+    }
+
+    // 3. Add "Recent Activity" sidebar:
+    function showRecentActivity() {
+        // Show last 10 actions from audit log
+    }
+
+    // Links Management Functions
+    function displayLinks() {
+        const tbody = document.getElementById('linksBody');
+        tbody.innerHTML = '';
+
+        links.forEach((link, index) => {
+            const currentUser = localStorage.getItem('logged_user');
+            const deleteButton = isCurrentUserAdmin() ? 
+                `<button class="btn btn-del" onclick="deleteLink(${index})">Delete</button>` : 
+                `<button class="btn btn-del" onclick="deleteLink(${index})" disabled title="Only admin can delete links">Delete</button>`;
+            
+            const row = `<tr>
+                <td>${link.name}</td>
+                <td><a href="${link.url.startsWith('http') ? link.url : 'http://' + link.url}" target="_blank"><b>${link.url}</b></a></td>
+                <td><a href="mailto:${link.email}">${link.email}</a></td>
+                <td>${deleteButton}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+        localStorage.setItem('zamcom_links', JSON.stringify(links));
+    }
+
+    function openLinkModal() {
+        if (!hasPermission(localStorage.getItem('logged_user'), 'add_link')) {
+            alert("You don't have permission to add links!");
+            return;
+        }
+        document.getElementById('linkModal').style.display = 'flex';
+    }
+
+    function closeLinkModal() {
+        document.getElementById('linkModal').style.display = 'none';
+        document.getElementById('instName').value = '';
+        document.getElementById('instWeb').value = '';
+        document.getElementById('instEmail').value = '';
+    }
+
+    function addLink() {
+        if (!hasPermission(localStorage.getItem('logged_user'), 'add_link')) {
+            alert("You don't have permission to add links!");
+            return;
+        }
+        
+        const name = document.getElementById('instName').value;
+        const url = document.getElementById('instWeb').value;
+        const email = document.getElementById('instEmail').value;
+
+        if(name && url && email) {
+            links.push({ name, url, email });
+            localStorage.setItem('zamcom_links', JSON.stringify(links));
+            displayLinks();
+            closeLinkModal();
+        } else {
+            alert("Please fill in all fields");
+        }
+    }
+
+    function deleteLink(index) {
+        if (!isCurrentUserAdmin()) {
+            alert("Only administrators can delete links!");
+            return;
+        }
+        
+        if(confirm("Are you sure you want to delete this link?")) {
+            links.splice(index, 1);
+            localStorage.setItem('zamcom_links', JSON.stringify(links));
+            displayLinks();
+        }
+    }
+
+    window.onload = () => {
+        checkDailySession();
+        renderCategories();
+        displayBackupDate();
+        updateUserDisplay();
+        
+        setInterval(syncBG, 1000);
+        setInterval(runTimeMonitoring, 30000);
+        setInterval(updateDashboardStatus, 1000);
+        
+        checkMissedBackup(); 
+        syncBG();
+        updateDashboardStatus();
+        
+        // Show home view by default
+        showView('home');
+        
+        // Close sessions panel when clicking outside
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('sessionsPanel');
+            const sessionsBtn = document.getElementById('sessionsBtn');
+            if (panel.style.display === 'block' && 
+                !panel.contains(e.target) && 
+                !sessionsBtn.contains(e.target)) {
+                panel.style.display = 'none';
+            }
+        });
+        
+        // Close document viewer when clicking outside
+        document.addEventListener('click', (e) => {
+            const docModal = document.getElementById('documentViewerModal');
+            if (docModal.style.display === 'flex' && e.target === docModal) {
+                closeDocumentViewer();
+            }
+        });
+    };
+</script>
+
+<footer style="text-align:center; padding: 40px; background: #333; color: white;">
+    <img src="./images/logo1.png" width="130" height="50">
+    <p>Designed by Joseph Zulu <br> ZAMCOM Procurement Department © 2026 - Present</p>
+    <a href="#headerSection" style="color:var(--primary-green)">Back to Top</a>
+</footer>
+
+</body>
+</html>
