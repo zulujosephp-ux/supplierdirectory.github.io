@@ -97,7 +97,6 @@
         .data-table th { background: var(--primary-green); color: white; }
         .data-table a { color: var(--link-blue); text-decoration: none; font-weight: bold; }
 
-        /* BEAUTIFIED COMPLIANCE PILLS */
         .compliance-pill { 
             display: inline-block; padding: 4px 8px; border-radius: 50px; 
             font-size: 10px; font-weight: bold; color: white; margin: 2px;
@@ -125,7 +124,6 @@
         .log-action { color: #444; margin-left: 5px; }
         .log-time { color: #999; font-style: italic; }
 
-        /* Modified By Dropdown Styles */
         .modified-by-container {
             position: relative;
             display: inline-block;
@@ -219,7 +217,6 @@
             color: white;
         }
         
-        /* User status */
         .user-status {
             display: inline-block;
             width: 8px;
@@ -236,7 +233,6 @@
             background: #95a5a6;
         }
 
-        /* Certificate upload styles */
         .certificate-upload {
             margin: 10px 0;
             padding: 10px;
@@ -286,7 +282,6 @@
             margin-top: -10px;
         }
 
-        /* VERTICAL LIFE BAR STYLES - Updated */
         .vertical-life-bar-container {
             width: 20px;
             height: 60px;
@@ -331,7 +326,6 @@
             background: linear-gradient(to top, #f44336, #e74c3c);
         }
 
-        /* Active sessions panel */
         .sessions-panel {
             position: fixed;
             top: 100px;
@@ -379,7 +373,6 @@
             color: #888;
         }
 
-        /* Pulse animation for online status */
         .pulse-online {
             background: #2ecc71;
             border-radius: 50%;
@@ -392,7 +385,6 @@
             100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
         }
 
-        /* About Us styles */
         .about-card {
             background: white;
             border-radius: 12px;
@@ -437,7 +429,6 @@
             border: 3px solid var(--primary-green);
         }
 
-        /* Links page styles */
         .controls-container {
             width: 95%;
             margin: 0 auto;
@@ -446,7 +437,6 @@
             padding: 10px 0;
         }
 
-        /* DOCUMENT VIEWER STYLES */
         .document-thumbnail {
             display: inline-block;
             position: relative;
@@ -566,7 +556,6 @@
             justify-content: center;
         }
 
-        /* Pagination styles for audit logs */
         .pagination {
             display: flex;
             justify-content: center;
@@ -599,7 +588,6 @@
             cursor: not-allowed;
         }
 
-        /* Compact supplier details table */
         .compact-table th, .compact-table td {
             padding: 8px 10px !important;
             font-size: 13px !important;
@@ -611,7 +599,6 @@
             gap: 2px;
         }
 
-        /* Image gallery styles */
         .supplier-images-preview {
             display: flex;
             gap: 10px;
@@ -724,7 +711,6 @@
             font-size: 14px;
         }
 
-        /* Star rating styles */
         .star-rating {
             display: inline-flex;
             gap: 2px;
@@ -761,7 +747,6 @@
             color: #333;
         }
 
-        /* User management modal styles */
         .user-contact-fields {
             margin: 10px 0;
             padding: 10px;
@@ -779,7 +764,6 @@
             box-sizing: border-box;
         }
 
-        /* Notification styles */
         .notification {
             position: fixed;
             top: 20px;
@@ -849,7 +833,6 @@
     </div>
 </div>
 
-<!-- Image Gallery Modal -->
 <div id="imageGalleryModal" class="image-gallery-modal">
     <div class="image-gallery-content">
         <button class="gallery-close" onclick="closeImageGallery()">✕</button>
@@ -898,7 +881,6 @@
     </div>
 </div>
 
-<!-- Document Viewer Modal -->
 <div id="documentViewerModal" class="document-viewer-modal">
     <div class="document-viewer-content">
         <div class="document-viewer-header">
@@ -906,7 +888,6 @@
             <button onclick="closeDocumentViewer()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✕</button>
         </div>
         <div class="document-viewer-body" id="documentViewerBody">
-            <!-- Document content will be loaded here -->
         </div>
     </div>
 </div>
@@ -1055,7 +1036,6 @@
     </table>
 </div>
 
-<!-- Active Sessions Panel -->
 <div id="sessionsPanel" class="sessions-panel">
     <div class="sessions-header">
         <span>👥 Active Sessions</span>
@@ -1066,7 +1046,6 @@
     </div>
 </div>
 
-<!-- Main Modal -->
 <div id="modalOverlay" class="modal">
     <div class="modal-content">
         <h3 id="modalTitle">Add New</h3>
@@ -1076,7 +1055,6 @@
     </div>
 </div>
 
-<!-- Links Modal -->
 <div id="linkModal" class="modal">
     <div class="modal-content">
         <h3>Add New Institution</h3>
@@ -1096,21 +1074,17 @@
     const LOCK_DURATION_MINUTES = 10;
     const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
     
-    // Sync configuration
     const SYNC_PROVIDER_FIREBASE = 'firebase';
     const SYNC_PROVIDER_SUPABASE = 'supabase';
     const SYNC_PROVIDER_MANUAL = 'manual';
     
-    // Define user roles
     const USER_ROLES = {
         ADMIN: 'admin',
         STAFF: 'staff'
     };
 
-    // Track active sessions
     const SESSION_KEY = 'z_active_sessions';
     
-    // Initialize user accounts with contact information
     let userAccounts = JSON.parse(localStorage.getItem('z_user_accounts'));
     if (!userAccounts) {
         userAccounts = [
@@ -1120,11 +1094,9 @@
         localStorage.setItem('z_user_accounts', JSON.stringify(userAccounts));
     }
 
-    // Image gallery variables
     let currentGalleryImages = [];
     let currentGalleryIndex = 0;
 
-    // Data variables
     let categories = JSON.parse(localStorage.getItem('z_categories')) || ["Stationary", "IT Equipment", "Hardware", "Marketing"];
     let suppliers = JSON.parse(localStorage.getItem('z_suppliers')) || [];
     let links = JSON.parse(localStorage.getItem('zamcom_links')) || [
@@ -1135,10 +1107,8 @@
     let certificates = JSON.parse(localStorage.getItem('z_certificates')) || {};
     let supplierImages = JSON.parse(localStorage.getItem('z_supplier_images')) || {};
 
-    // Mainframe key for password reset
     const mainframeKey = "JATKISSEMPIRE";
 
-    // ==================== SYNC SETTINGS ====================
 
     function showSyncSettings() {
         const fields = document.getElementById('modalFields');
@@ -1262,7 +1232,7 @@
         const provider = localStorage.getItem('sync_provider') || SYNC_PROVIDER_MANUAL;
         
         if (provider === SYNC_PROVIDER_MANUAL) {
-            exportData(); // Fall back to manual export
+            exportData();
             return;
         }
         
@@ -1304,7 +1274,6 @@
                 loadDataIntoLocalStorage(data);
                 showNotification('Data loaded from cloud!', 'success');
                 
-                // Refresh UI
                 if (typeof renderCategories === 'function') renderCategories();
                 if (typeof displayLinks === 'function') displayLinks();
                 if (document.getElementById('categoryPageView').style.display !== 'none') {
@@ -1317,7 +1286,6 @@
         }
     }
     
-    // Firebase functions (simplified - in production you'd use Firebase SDK)
     async function syncToFirebase(data) {
         const config = localStorage.getItem('firebase_config');
         if (!config) {
@@ -1325,8 +1293,6 @@
             return;
         }
         
-        // In a real implementation, you would use Firebase SDK
-        // This is a placeholder for the concept
         localStorage.setItem('firebase_backup', JSON.stringify(data));
         return true;
     }
@@ -1339,7 +1305,6 @@
         return null;
     }
     
-    // Supabase functions (simplified)
     async function syncToSupabase(data) {
         const url = localStorage.getItem('supabase_url');
         const key = localStorage.getItem('supabase_key');
@@ -1349,7 +1314,6 @@
             return;
         }
         
-        // Placeholder for Supabase implementation
         localStorage.setItem('supabase_backup', JSON.stringify(data));
         return true;
     }
@@ -1361,8 +1325,6 @@
         }
         return null;
     }
-
-    // ==================== PASSWORD RECOVERY ====================
 
     function forgotPasswordSimple() {
         const username = prompt("Enter your username:").toUpperCase();
@@ -1380,7 +1342,6 @@
             return;
         }
         
-        // Create email link (opens user's email client)
         const subject = encodeURIComponent("ZAMCOM Supplier Directory - Your Password");
         const body = encodeURIComponent(
             `Hello ${user.username},\n\n` +
@@ -1431,7 +1392,6 @@
             return;
         }
         
-        // Update password
         userAccounts[userIndex].password = newPassword;
         saveUserData();
         
@@ -1454,7 +1414,6 @@
         } else { alert("Unauthorized Access!"); }
     }
 
-    // ==================== NOTIFICATION SYSTEM ====================
 
     function showNotification(message, type = 'success') {
         let notification = document.getElementById('notification');
@@ -1476,14 +1435,10 @@
         }, 5000);
     }
 
-    // ==================== EXISTING SYSTEM FUNCTIONS ====================
-
-    // Helper function to get user by username
     function getUser(username) {
         return userAccounts.find(u => u.username === username.toUpperCase());
     }
 
-    // Helper function to check if user has permission
     function hasPermission(username, permission) {
         const user = getUser(username);
         if (!user || !user.enabled) return false;
@@ -1510,7 +1465,6 @@
         return false;
     }
 
-    // Helper function to get current user's role
     function getCurrentUserRole() {
         const currentUser = localStorage.getItem('logged_user');
         if (!currentUser) return null;
@@ -1519,17 +1473,14 @@
         return user ? user.role : null;
     }
 
-    // Helper function to check if current user is admin
     function isCurrentUserAdmin() {
         return getCurrentUserRole() === USER_ROLES.ADMIN;
     }
 
-    // Helper function to check if current user is staff
     function isCurrentUserStaff() {
         return getCurrentUserRole() === USER_ROLES.STAFF;
     }
 
-    // Session Management Functions
     function getActiveSessions() {
         return JSON.parse(localStorage.getItem(SESSION_KEY)) || {};
     }
@@ -1854,7 +1805,6 @@
                 document.getElementById('syncSettingsBtn').style.display = 'inline-block';
             }
             
-            // Add Change Password link
             setTimeout(() => {
                 const userInfo = document.getElementById('currentUserInfo');
                 if (userInfo && !userInfo.querySelector('.change-pass-link')) {
@@ -1928,7 +1878,6 @@
         }
     }
 
-    // ==================== AUTO-SYNC FUNCTION ====================
 
     function autoSyncToCloud() {
         const provider = localStorage.getItem('sync_provider');
@@ -1940,7 +1889,6 @@
         }
     }
 
-    // ==================== DATA SAVE FUNCTIONS WITH CLOUD SYNC ====================
 
     function saveSupplierData() {
         localStorage.setItem('z_suppliers', JSON.stringify(suppliers));
@@ -1972,7 +1920,6 @@
         autoSyncToCloud();
     }
 
-    // ==================== EXISTING DATA FUNCTIONS ====================
 
     function filterEverything() {
         const term = document.getElementById('globalSearch').value.toLowerCase().trim();
@@ -2074,7 +2021,6 @@
                 document.getElementById('syncSettingsBtn').style.display = 'inline-block';
             }
             
-            // Check if we need to show login overlay
             const user = getUser(currentUser);
             if (user && user.enabled) {
                 document.getElementById('loginOverlay').style.display = 'none';
@@ -2225,7 +2171,6 @@
         `;
     }
 
-    // Star rating functions
     let currentRatingValue = 0;
 
     function createRatingDisplayHTML(rating) {
@@ -2362,7 +2307,6 @@
             const imagesPreview = createImagePreview(realIndex);
             const ratingDisplay = createRatingDisplayHTML(rating);
             
-            // Hide delete button for staff users
             const deleteButton = isCurrentUserAdmin() ? 
                 `<button class="btn-del" onclick="deleteSupplier(${realIndex})">Delete</button>` : 
                 '';
@@ -2469,7 +2413,6 @@
         }
     }
 
-    // Certificate functions
     async function readFileAsDataURL(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -2561,7 +2504,6 @@
         }
     }
 
-    // Image management functions
     function getSupplierImages(supplierIndex) {
         return supplierImages[supplierIndex] || [];
     }
@@ -2597,20 +2539,17 @@
         const files = Array.from(event.target.files);
         const currentImages = getSupplierImages(supplierIndex);
         
-        // Check if adding these files would exceed 3 images
         if (currentImages.length + files.length > 3) {
             alert("Maximum 3 images allowed per supplier. You currently have " + currentImages.length + " images.");
             return;
         }
         
         for (const file of files) {
-            // Check file size (3MB limit)
             if (file.size > MAX_IMAGE_SIZE) {
                 alert(`File "${file.name}" exceeds 3MB limit. Please choose a smaller file.`);
                 continue;
             }
             
-            // Check file type
             if (!file.type.startsWith('image/')) {
                 alert(`File "${file.name}" is not an image. Please upload image files only.`);
                 continue;
@@ -2627,7 +2566,6 @@
             });
         }
         
-        // Save images
         saveSupplierImages(supplierIndex, currentImages);
         
         // Update preview
@@ -2636,7 +2574,6 @@
             previewContainer.innerHTML = createImagePreview(supplierIndex);
         }
         
-        // Clear file input
         event.target.value = '';
     }
 
@@ -2657,7 +2594,6 @@
         return false;
     }
 
-    // Document viewer functions
     function getSupplierDocuments(supplierIndex) {
         const supplierCerts = certificates[supplierIndex];
         if (!supplierCerts) return [];
@@ -2818,7 +2754,6 @@
         document.getElementById('documentViewerModal').style.display = 'none';
     }
 
-    // Image gallery functions
     function openImageGallery(supplierIndex, startIndex = 0) {
         const images = getSupplierImages(supplierIndex);
         if (images.length === 0) return;
@@ -2855,7 +2790,6 @@
         document.getElementById('imageCounter').textContent = `${currentGalleryIndex + 1} / ${currentGalleryImages.length}`;
     }
 
-    // Modal functions
     function openModal(type, editIndex = null) {
         const currentUser = localStorage.getItem('logged_user');
         
@@ -2977,7 +2911,6 @@
                 </select>
             `;
 
-            // Initialize rating
             currentRatingValue = s.rating || 0;
 
             saveBtn.onclick = () => {
@@ -3036,7 +2969,6 @@
         document.getElementById('modalOverlay').style.display = 'none'; 
     }
 
-    // User management functions
     function manageUsersModal() {
         const fields = document.getElementById('modalFields');
         document.getElementById('modalTitle').innerText = "User Management";
@@ -3239,7 +3171,6 @@
         container.innerHTML = html;
     }
 
-    // Links management functions
     function displayLinks() {
         const tbody = document.getElementById('linksBody');
         tbody.innerHTML = '';
@@ -3309,7 +3240,6 @@
         }
     }
 
-    // Data helper functions
     function getAllData() {
         return { 
             categories: categories, 
@@ -3355,7 +3285,6 @@
         }
     }
 
-    // Export/Import functions
     function exportData() {
         const data = getAllData();
         
@@ -3398,7 +3327,6 @@
         reader.readAsText(file);
     }
 
-    // Background image rotation
     const bgImages = ['./images/bgx.jpg', './images/bgx1.jpg', './images/bg.jpg', './images/bgx3.jpg', './images/bgx4.jpg', './images/bgx5.jpg', './images/bgx6.jpg', './images/bgx7.jpg', './images/bgx8.jpg', './images/bgx9.jpg', './images/bgy1.jpg', './images/bgy3.jpg', './images/bgy4.jpg', './images/bgy5.jpg'];
     function syncBG() {
         const header = document.getElementById('headerSection');
@@ -3494,7 +3422,6 @@
         `;
     }
 
-    // ==================== INITIALIZATION ====================
 
     window.onload = async () => {
         checkDailySession();
@@ -3512,7 +3439,6 @@
         
         showView('home');
         
-        // Add event listeners
         document.addEventListener('click', (e) => {
             const panel = document.getElementById('sessionsPanel');
             const sessionsBtn = document.getElementById('sessionsBtn');
